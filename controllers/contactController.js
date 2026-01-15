@@ -1,33 +1,70 @@
-const getContacts = (req, res) => {
-  res.status(200).json({ message: "Contacts retrieved successfully" });
+const Contact = require("../models/contactModel");
+
+// GET all contacts
+const getContacts = async (req, res) => {
+  const contacts = await Contact.find();
+  res.status(200).json(contacts);
 };
 
-const createContact = (req, res) => {
+// CREATE contact
+const createContact = async (req, res) => {
   const { name, email, phone } = req.body;
+
   if (!name || !email || !phone) {
     res.status(400);
-    throw new Error("All fields are required");
+    throw new Error("All fields are mandatory");
   }
 
-  res.status(200).json({ message: "Contact created successfully" });
+  const contact = await Contact.create({
+    name,
+    email,
+    phone,
+  });
+
+  res.status(201).json(contact);
 };
 
-const getContactById = (req, res) => {
-  res.status(200).json({
-    message: `Contact retrieved successfully with id ${req.params.id}`,
-  });
+// GET contact by ID
+const getContactById = async (req, res) => {
+  const contact = await Contact.findById(req.params.id);
+
+  if (!contact) {
+    res.status(404);
+    throw new Error("Contact not found");
+  }
+
+  res.status(200).json(contact);
 };
 
-const updateContactById = (req, res) => {
-  res.status(200).json({
-    message: `Contact updated successfully with id ${req.params.id}`,
-  });
+// UPDATE contact
+const updateContactById = async (req, res) => {
+  const contact = await Contact.findById(req.params.id);
+
+  if (!contact) {
+    res.status(404);
+    throw new Error("Contact not found");
+  }
+
+  const updatedContact = await Contact.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+
+  res.status(200).json(updatedContact);
 };
 
-const deleteContactById = (req, res) => {
-  res.status(200).json({
-    message: `Contact deleted successfully with id ${req.params.id}`,
-  });
+// DELETE contact
+const deleteContactById = async (req, res) => {
+  const contact = await Contact.findById(req.params.id);
+
+  if (!contact) {
+    res.status(404);
+    throw new Error("Contact not found");
+  }
+
+  await contact.deleteOne();
+  res.status(200).json({ message: "Contact deleted successfully" });
 };
 
 module.exports = {
